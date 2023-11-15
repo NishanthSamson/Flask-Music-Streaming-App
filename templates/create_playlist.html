@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Playlist</title>
+</head>
+<body>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="text" placeholder="Playlist name" name="name">
+        <input type="file" placeholder="Image" name = "img">
+        <textarea rows="4" cols="30" name="desc"></textarea>
+        {% for song in songs %}
+        <label>
+            <input type="checkbox" name="selected_songs" value="{{ song.id }}">
+            {{ song.name }} - {{ song.user.email }} - {{ song.duration }}
+        </label><br>
+        {% endfor %}
+        <input type="submit" value="upload">        
+    </form>
+</body>
+</html>

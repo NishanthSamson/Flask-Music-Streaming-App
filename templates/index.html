@@ -12,7 +12,6 @@
 <body>
     <nav class = "navbar">
         <img src = "../static/react.svg" width="40px" />
-        <h1>Music Player</h1>
     </nav>
 
     <div class = "container-fluid">
@@ -23,8 +22,8 @@
                         <img src = "../static/react.svg" width="80px" />
                     </div>
                     <div class="col">
-                        <h3>Name</h3>
-                        <p>Hello</p>
+                        <h3>{{user}}</h3>
+                        <p>{{email}}</p>
                     </div>
                 </div>
             Lorem, ipsum dolor sit amet consectetur adipisicing elit. Minima laudantium corporis, ipsum odio excepturi impedit quos perspiciatis fugiat quidem officiis, aspernatur, cum ipsam vel omnis at quia aperiam saepe maiores!
@@ -46,6 +45,22 @@
             Lorem, ipsum dolor sit amet consectetur adipisicing elit. Minima laudantium corporis, ipsum odio excepturi impedit quos perspiciatis fugiat quidem officiis, aspernatur, cum ipsam vel omnis at quia aperiam saepe maiores!
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis libero, in vel earum suscipit est, tempora sequi asperiores maxime aliquam magni officiis saepe dolore perspiciatis distinctio, laborum quod! Similique, corporis?
             Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis at amet nulla modi! Obcaecati, minima! Dicta quisquam deserunt quam facere quod necessitatibus magnam provident ipsum commodi vel. Possimus, ab aspernatur.
+            <br>
+            <h1>Songs</h1>
+            {% for song in songs %}
+            <label>
+                {{ song.name }} - {{ song.user.email }} - {{ song.duration }}
+            </label><br>
+            {% endfor %}
+
+            <h1>Playlists</h1>
+            {% for playlist in playlists %}
+            <label>
+                {{ playlist.name }} - {{ playlist.desc }} - {{ playlist.creator_id}}
+            </label><br>
+            {% endfor %}
+
+
         </div>
         <div class="col-md-2">
             <H1>col 3</H1>
