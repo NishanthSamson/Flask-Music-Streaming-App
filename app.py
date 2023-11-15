@@ -51,6 +51,7 @@ class User(db.Model, UserMixin):
 class Songs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
+    song = db.Column(db.String(300))
     img = db.Column(db.String(300))
     duration = db.Column(db.Integer)
     genre = db.Column(db.String(50))
@@ -68,8 +69,17 @@ class Albums(db.Model):
     name = db.Column(db.String(200), nullable=False)
     img = db.Column(db.String(300))
     desc = db.Column(db.String(1000))
-    songs = db.relationship('Songs', backref='album',
-                            cascade="all, delete-orphan")
+    creator_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), nullable=False)
+    songs = db.relationship(
+        'Songs', secondary='album_songs', backref='albums')
+
+    album_songs = db.Table('album_songs',
+                           db.Column('album_id', db.Integer, db.ForeignKey(
+                               'albums.id'), primary_key=True),
+                           db.Column('song_id', db.Integer, db.ForeignKey(
+                               'songs.id'), primary_key=True)
+                           )
 
 
 class Playlist(db.Model):
@@ -129,11 +139,15 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    user = "login" if not current_user.is_authenticated else current_user.username
-    email = "" if not current_user.is_authenticated else current_user.email
+    auth = current_user.is_authenticated
+    user = "login" if not auth else current_user.username
+    email = "" if not auth else current_user.email
+    hide = "" if not auth else "hidden"
+    log = "hidden" if not auth else ""
     songs = Songs.query.all()
     playlists = Playlist.query.all()
-    return render_template('index.html', songs=songs, playlists=playlists, user=user, email=email)
+    albums = Albums.query.all()
+    return render_template('index.html', songs=songs, playlists=playlists, user=user, email=email, hide=hide, log=log, albums=albums)
 
 
 @app.route('/register', methods=['POST', 'GET'])
@@ -161,9 +175,10 @@ def register():
     return render_template('register.html')
 
 
-@app.route('/track/<int:id>')
-def track(id):
-    return render_template('track.html', id=id)
+@app.route('/song/<int:id>')
+def view_song(id):
+    song = Songs.query.filter_by(id=id).first()
+    return render_template('viewsong.html', song=song)
 
 
 @app.route('/artist/<int:id>')
@@ -177,8 +192,19 @@ def user(id):
 
 
 @app.route('/album/<int:id>')
-def album(id):
-    return render_template('album.html', id=id)
+def view_album(id):
+    album = Albums.query.get(id)
+    if album:
+        album_songs = album.songs
+    return render_template('viewalbum.html', id=id, album_songs=album_songs, album=album)
+
+
+@app.route('/playlist/<int:id>')
+def view_playlist(id):
+    playlist = Playlist.query.get(id)
+    if playlist:
+        playlist_songs = playlist.songs
+    return render_template('viewplaylist.html', id=id, playlist_songs=playlist_songs, playlist=playlist)
 
 
 @app.route('/account')
@@ -194,8 +220,14 @@ def create_song():
         if file:
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        cover = request.files['img']
+        if cover:
+            covername = secure_filename(cover.filename)
+            cover.save(os.path.join(app.config['UPLOAD_FOLDER'], covername))
+
         new_song = Songs(name=request.form.get('name'),
-                         genre=request.form.get('genre'), duration=request.form.get('duration'), artist_id=uid, img=filename)
+                         genre=request.form.get('genre'), duration=request.form.get('duration'), artist_id=uid, song=filename, img=covername)
         db.session.add(new_song)
         db.session.commit()
         return redirect(url_for('index'))
@@ -224,6 +256,40 @@ def create_playlist():
         return redirect(url_for('index'))
     songs = Songs.query.all()
     return render_template('create_playlist.html', songs=songs)
+
+
+@app.route('/create/album', methods=['POST', 'GET'])
+def create_album():
+    uid = current_user.id
+    if request.method == 'POST':
+        file = request.files['img']
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        new_album = Albums(name=request.form.get(
+            'name'), desc=request.form.get('desc'), creator_id=uid, img=filename)
+        selected_songs = request.form.getlist('selected_songs')
+        for song_id in selected_songs:
+            song = Songs.query.get(song_id)
+            if song:
+                new_album.songs.append(song)
+
+        db.session.add(new_album)
+        db.session.commit()
+
+        return redirect(url_for('index'))
+    songs = Songs.query.filter_by(artist_id=uid)
+    return render_template('create_playlist.html', songs=songs)
+
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    return redirect(url_for('index'))
 
 
 if (__name__ == '__main__'):

@@ -1,4 +1,7 @@
-button{
-    margin-top: 20px;
+#songgroup:hover{
+    background-color: rgb(0, 187, 255);
 }
 
+#playlistgroup:hover{
+    background-color: rgb(0, 187, 255);
+}
