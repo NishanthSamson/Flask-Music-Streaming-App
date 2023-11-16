@@ -1,10 +1,12 @@
-from flask import Flask, redirect, render_template, request, url_for, flash
+from flask import Flask, redirect, render_template, request, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, login_required, current_user, UserMixin, RoleMixin, logout_user
 from flask_security.utils import hash_password
 from werkzeug.utils import secure_filename
 from flask_bcrypt import *
 import os
+import pygame
+from mutagen.mp3 import MP3
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -137,8 +139,19 @@ with app.app_context():
         db.session.commit()
 
 
+pygame.mixer.init()
+
+
 @app.route('/')
 def index():
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+
+    # pygame.mixer.music.load("static/uploads/" + curr_song.song)
+    # pygame.mixer.music.play()
+    # pygame.mixer.music.pause()
+
+    status = session.get('playpause', 'play')
     auth = current_user.is_authenticated
     user = "login" if not auth else current_user.username
     email = "" if not auth else current_user.email
@@ -147,7 +160,7 @@ def index():
     songs = Songs.query.all()
     playlists = Playlist.query.all()
     albums = Albums.query.all()
-    return render_template('index.html', songs=songs, playlists=playlists, user=user, email=email, hide=hide, log=log, albums=albums)
+    return render_template('index.html', songs=songs, playlists=playlists, user=user, email=email, hide=hide, log=log, albums=albums, curr_song=curr_song, status=status)
 
 
 @app.route('/register', methods=['POST', 'GET'])
@@ -177,8 +190,11 @@ def register():
 
 @app.route('/song/<int:id>')
 def view_song(id):
+    status = session.get('playpause', 'play')
     song = Songs.query.filter_by(id=id).first()
-    return render_template('viewsong.html', song=song)
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+    return render_template('viewsong.html', song=song, curr_song=curr_song, status=status)
 
 
 @app.route('/artist/<int:id>')
@@ -290,6 +306,71 @@ def login():
 @app.route('/logout')
 def logout():
     return redirect(url_for('index'))
+
+
+@app.route('/play_pause')
+def play_pause():
+    if pygame.mixer.music.get_busy():
+        pygame.mixer.music.pause()
+        session['playpause'] = 'play'
+    else:
+        pygame.mixer.music.unpause()
+        session['playpause'] = 'pause'
+    return "Success"
+
+
+@app.route('/play/<int:song_id>')
+def play(song_id=1):
+    song = Songs.query.filter_by(id=song_id).first()
+    full_path = os.path.join('static/uploads', song.song)
+    pygame.mixer.music.load(full_path)
+    pygame.mixer.music.play()
+    audio = MP3(full_path)
+    song_duration = audio.info.length
+    session['current_song_id'] = song_id
+    session['playpause'] = 'pause'
+    return "Success"
+
+
+def get_next_song(playlist_id, current_song_id):
+    playlist = Playlist.query.get(playlist_id)
+    songs = playlist.songs
+    current_song_index = songs.index(Songs.query.get(current_song_id))
+
+    next_song_index = (current_song_index + 1) % len(songs)
+    next_song = songs[next_song_index]
+    if next_song:
+        play(next_song.id)
+
+
+@app.route('/next/<int:song_id>')
+def get_next_song(song_id):
+    try:
+        a = int(song_id) + 1
+        next_song = Songs.query.get(a)
+    except:
+        flash("Last song")
+    if next_song:
+        play(next_song.id)
+    return "Success"
+
+
+@app.route('/prev/<int:song_id>')
+def get_prev_song(song_id):
+    try:
+        a = int(song_id) - 1
+        prev_song = Songs.query.get(a)
+    except:
+        flash("First song")
+    if prev_song:
+        play(prev_song.id)
+    return "Success"
+
+
+def playlist_song(playlist_id):
+    playlist = Playlist.query.get(playlist_id)
+    first_song = playlist.songs[0]
+    play(first_song.id)
 
 
 if (__name__ == '__main__'):

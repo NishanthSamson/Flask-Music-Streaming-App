@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../static/app.css" />
+    <title>Music Player</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary p-2">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{{ url_for('index') }}"><img src = "../static/react.svg" width="30px" /></a>
+            <h4 class = "me-5 mt-2">                   </h4>
+            <form class="d-flex justify-content-start w-25 me-auto" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+            </form>
+            <div class = "d-flex me-5">
+            <!-- <button id ="btnSwitch" :class="'btn btn-'+ theme" @click="toggleTheme">{theme}</button> -->
+            </div>
+            
+          </div>
+      </nav>
+
+{% block content %}{% endblock %}
+<div class="col-md-2" id="col3">
+        <img src="{{ url_for('static', filename='uploads/' + curr_song.img) }}" class="me-5" alt="cover" style="width: 15.5rem; height: 15.5rem; object-fit: cover;">
+        <h3>{{curr_song.name}}</h3>
+        <h6>{{curr_song.user.username}}</h6>
+        {{status}}
+</div>
+</div>
+</div>
+</div>
+
+<div class="fixed-bottom" id="player">
+    <div class="container-fluid d-flex justify-content-center">
+        <div class="row">
+            <div class="col mt-2 mb-2 ">
+                <img id="prevBtn" src="{{ url_for('static', filename='prev.png') }}" width="40px" onclick="togglePrev({{curr_song.id}})">
+            </div>
+            <div class="col mt-2 mb-2 ">
+                <img id="playPauseBtn" src="{{ url_for('static', filename='play.png') }}" width="40px" onclick="togglePlayPause()">
+            </div>
+            <div class="col mt-2 mb-2 ">
+                <img id="nextBtn" src="{{ url_for('static', filename='next.png') }}" width="40px" onclick="toggleNext({{curr_song.id}})">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePlayPause() {
+        fetch('/play_pause')
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+                console.log(data);
+                updatePlayPauseIcon();
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }
+
+    function updatePlayPauseIcon() {
+        var playPauseBtn = document.getElementById('playPauseBtn');
+        playPauseBtn.src = (playPauseBtn.src.endsWith('play.png')) ? '{{ url_for('static', filename='pause.png') }}' : '{{ url_for('static', filename='play.png') }}';
+    }
+
+    function toggleNext(id) {
+        fetch('/next/' + id)
+            .then(response => {
+                if (response.ok) {
+                    var playPauseBtn = document.getElementById('playPauseBtn');
+                    playPauseBtn.src = '{{ url_for('static', filename='pause.png') }}';
+                    return response.text();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    PlayPauseIcon(); // Call the function when the DOM is fully loaded
+    console.log('Player Status:', {{status}});
+    function PlayPauseIcon() {
+        var playPauseBtn = document.getElementById('playPauseBtn');
+        playPauseBtn.src = ('{{ status }}' === 'pause') ? '{{ url_for('static', filename='pause.png') }}' : '{{ url_for('static', filename='play.png') }}';
+    }
+});
+
+    // function togglePlayer(status){
+    //     var playPauseBtn = document.getElementById('playPauseBtn');
+    //     playPauseBtn.src = (status === 'pause') ? '{{ url_for('static', filename='pause.png') }}' : '{{ url_for('static', filename='play.png') }}';
+    //     console.log('okasdasdasdasdas');
+    // }
+
+
+    function togglePrev(id) {
+        fetch('/prev/' + id)
+            .then(response => {
+                if (response.ok) {
+                    var playPauseBtn = document.getElementById('playPauseBtn');
+                    playPauseBtn.src = '{{ url_for('static', filename='pause.png') }}';
+                    return response.text();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }
+</script>
+
+</body>
+</html>
