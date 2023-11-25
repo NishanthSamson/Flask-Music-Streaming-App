@@ -262,13 +262,27 @@ def view_album(id):
 def edit_album(id):
     album = Albums.query.get(id)
     if current_user.id == album.creator_id or current_user.id == 1:
+        songs = Songs.query.filter_by(artist_id=current_user.id)
         if request.method == 'POST':
-            album.name = request.form.get('album_name')
-            album.desc = request.form.get('album_desc')
+            action = request.form.get('action')
+            if action == 'add_song':
+                new_song_id = request.form.get('add_song')
+                new_song = Songs.query.get(new_song_id)
+                album.songs.append(new_song)
+
+            elif action == 'remove_song':
+                song_id_to_remove = int(request.form.get('remove_song'))
+                song_to_remove = Songs.query.get(song_id_to_remove)
+                album.songs.remove(song_to_remove)
+
+            if request.form.get('playlist_name') and request.form.get('playlist_duration'):
+                album.name = request.form.get('album_name')
+                album.desc = request.form.get('album_desc')
+
             db.session.commit()
 
             return redirect(url_for('index'))
-        return render_template('edit_album.html', album=album)
+        return render_template('edit_album.html', album=album, songs=songs)
     return redirect(url_for('index'))
 
 
@@ -298,13 +312,28 @@ def view_playlist(id):
 def edit_playlist(id):
     playlist = Playlist.query.get(id)
     if current_user.id == playlist.creator_id or current_user.id == 1:
+        songs = Songs.query.all()
         if request.method == 'POST':
-            playlist.name = request.form.get('playlist_name')
-            playlist.desc = request.form.get('playlist_duration')
+            action = request.form.get('action')
+
+            if action == 'add_song':
+                new_song_id = request.form.get('add_song')
+                new_song = Songs.query.get(new_song_id)
+                playlist.songs.append(new_song)
+
+            elif action == 'remove_song':
+                song_id_to_remove = int(request.form.get('remove_song'))
+                song_to_remove = Songs.query.get(song_id_to_remove)
+                playlist.songs.remove(song_to_remove)
+
+            if request.form.get('playlist_name') and request.form.get('playlist_duration'):
+                playlist.name = request.form.get('playlist_name')
+                playlist.desc = request.form.get('playlist_duration')
+
             db.session.commit()
 
             return redirect(url_for('index'))
-        return render_template('edit_playlist.html', playlist=playlist)
+        return render_template('edit_playlist.html', playlist=playlist, songs=songs)
     return redirect(url_for('index'))
 
 
