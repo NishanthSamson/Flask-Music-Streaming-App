@@ -153,7 +153,7 @@ def index():
     a = session.get('current_song_id', 1)
     curr_song = Songs.query.filter_by(id=a).first()
     if not curr_song:
-        curr_song = Songs.query.first()
+        curr_song = Songs(name='None', img='default.png')
     status = session.get('playpause', 'play')
     auth = current_user.is_authenticated
     user = "login" if not auth else current_user.username
@@ -213,22 +213,25 @@ def view_song(id):
 @app.route('/edit/song/<int:id>', methods=['POST', 'GET'])
 def edit_song(id):
     song = Songs.query.get(id)
-    if request.method == 'POST':
-        song.name = request.form.get('song_name')
-        song.duration = request.form.get('song_duration')
-        song.genre = request.form.get('song_genre')
-        song.lyrics = request.form.get('song_lyrics')
-        db.session.commit()
+    if current_user.id == song.artist_id or current_user.id == 1:
+        if request.method == 'POST':
+            song.name = request.form.get('song_name')
+            song.duration = request.form.get('song_duration')
+            song.genre = request.form.get('song_genre')
+            song.lyrics = request.form.get('song_lyrics')
+            db.session.commit()
 
-        return redirect(url_for('index'))
-    return render_template('edit_song.html', song=song)
+            return redirect(url_for('index'))
+        return render_template('edit_song.html', song=song)
+    return redirect(url_for('index'))
 
 
 @app.route('/remove/song/<int:id>', methods=['POST', 'GET'])
 def remove_song(id):
     song = Songs.query.get(id)
-    db.session.delete(song)
-    db.session.commit()
+    if current_user.id == song.artist_id or current_user.id == 1:
+        db.session.delete(song)
+        db.session.commit()
     return redirect(url_for('index'))
 
 
@@ -258,20 +261,23 @@ def view_album(id):
 @app.route('/edit/album/<int:id>', methods=['POST', 'GET'])
 def edit_album(id):
     album = Albums.query.get(id)
-    if request.method == 'POST':
-        album.name = request.form.get('album_name')
-        album.desc = request.form.get('album_desc')
-        db.session.commit()
+    if current_user.id == album.creator_id or current_user.id == 1:
+        if request.method == 'POST':
+            album.name = request.form.get('album_name')
+            album.desc = request.form.get('album_desc')
+            db.session.commit()
 
-        return redirect(url_for('index'))
-    return render_template('edit_album.html', album=album)
+            return redirect(url_for('index'))
+        return render_template('edit_album.html', album=album)
+    return redirect(url_for('index'))
 
 
 @app.route('/remove/album/<int:id>', methods=['POST', 'GET'])
 def remove_album(id):
     album = Albums.query.get(id)
-    db.session.delete(album)
-    db.session.commit()
+    if current_user.id == album.creator_id or current_user.id == 1:
+        db.session.delete(album)
+        db.session.commit()
     return redirect(url_for('index'))
 
 
@@ -291,20 +297,23 @@ def view_playlist(id):
 @app.route('/edit/playlist/<int:id>', methods=['POST', 'GET'])
 def edit_playlist(id):
     playlist = Playlist.query.get(id)
-    if request.method == 'POST':
-        playlist.name = request.form.get('playlist_name')
-        playlist.desc = request.form.get('playlist_duration')
-        db.session.commit()
+    if current_user.id == playlist.creator_id or current_user.id == 1:
+        if request.method == 'POST':
+            playlist.name = request.form.get('playlist_name')
+            playlist.desc = request.form.get('playlist_duration')
+            db.session.commit()
 
-        return redirect(url_for('index'))
-    return render_template('edit_playlist.html', playlist=playlist)
+            return redirect(url_for('index'))
+        return render_template('edit_playlist.html', playlist=playlist)
+    return redirect(url_for('index'))
 
 
 @app.route('/remove/playlist/<int:id>', methods=['POST', 'GET'])
 def remove_playlist(id):
     playlist = Playlist.query.get(id)
-    db.session.delete(playlist)
-    db.session.commit()
+    if current_user.id == playlist.creator_id or current_user.id == 1:
+        db.session.delete(playlist)
+        db.session.commit()
     return redirect(url_for('index'))
 
 
@@ -385,17 +394,20 @@ def create_album():
 
 @app.route('/manage/songs')
 def manage_songs():
-    return render_template('manage_songs.html')
+    songs = Songs.query.filter_by(artist_id=current_user.id)
+    return render_template('manage_songs.html', songs=songs)
 
 
 @app.route('/manage/playlists')
 def manage_playlists():
-    return render_template('manage_playlists.html')
+    playlists = Playlist.query.filter_by(creator_id=current_user.id)
+    return render_template('manage_playlists.html', playlists=playlists)
 
 
 @app.route('/manage/albums')
 def manage_albums():
-    return render_template('manage_albums.html')
+    albums = Albums.query.filter_by(creator_id=current_user.id)
+    return render_template('manage_albums.html', albums=albums)
 
 
 @app.route('/login')
