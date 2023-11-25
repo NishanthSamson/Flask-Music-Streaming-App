@@ -19,7 +19,6 @@
                 <button class="btn btn-outline-primary" type="submit">Search</button>
             </form>
             <div class = "d-flex me-5">
-            <!-- <button id ="btnSwitch" :class="'btn btn-'+ theme" @click="toggleTheme">{theme}</button> -->
             </div>
             
           </div>
@@ -29,8 +28,7 @@
 <div class="col-md-2" id="col3">
         <img src="{{ url_for('static', filename='uploads/' + curr_song.img) }}" class="me-5" alt="cover" style="width: 15.5rem; height: 15.5rem; object-fit: cover;">
         <h3>{{curr_song.name}}</h3>
-        <h6>{{curr_song.user.username}}</h6>
-        {{status}}
+        <h6 class="fw-light">{{curr_song.user.username}}</h6>
 </div>
 </div>
 </div>
@@ -94,20 +92,13 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-    PlayPauseIcon(); // Call the function when the DOM is fully loaded
+    PlayPauseIcon();
     console.log('Player Status:', {{status}});
     function PlayPauseIcon() {
         var playPauseBtn = document.getElementById('playPauseBtn');
         playPauseBtn.src = ('{{ status }}' === 'pause') ? '{{ url_for('static', filename='pause.png') }}' : '{{ url_for('static', filename='play.png') }}';
     }
 });
-
-    // function togglePlayer(status){
-    //     var playPauseBtn = document.getElementById('playPauseBtn');
-    //     playPauseBtn.src = (status === 'pause') ? '{{ url_for('static', filename='pause.png') }}' : '{{ url_for('static', filename='play.png') }}';
-    //     console.log('okasdasdasdasdas');
-    // }
-
 
     function togglePrev(id) {
         fetch('/prev/' + id)
@@ -127,6 +118,6 @@
             });
     }
 </script>
-
+<div class="container mt-5"></div>
 </body>
 </html>

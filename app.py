@@ -45,6 +45,10 @@ class User(db.Model, UserMixin):
     confirmed_at = db.Column(db.DateTime())
     songs = db.relationship('Songs', backref='user',
                             cascade="all, delete-orphan")
+    albums = db.relationship('Albums', backref='user',
+                             cascade="all, delete-orphan")
+    playlist = db.relationship('Playlist', backref='user',
+                               cascade="all, delete-orphan")
     roles = db.relationship(
         "Role", secondary="roles_users", backref=db.backref("users", lazy="dynamic")
     )
@@ -144,13 +148,12 @@ pygame.mixer.init()
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated and current_user.username == 'admin':
+        return redirect(url_for('admin_manage'))
     a = session.get('current_song_id', 1)
     curr_song = Songs.query.filter_by(id=a).first()
-
-    # pygame.mixer.music.load("static/uploads/" + curr_song.song)
-    # pygame.mixer.music.play()
-    # pygame.mixer.music.pause()
-
+    if not curr_song:
+        curr_song = Songs.query.first()
     status = session.get('playpause', 'play')
     auth = current_user.is_authenticated
     user = "login" if not auth else current_user.username
@@ -188,13 +191,45 @@ def register():
     return render_template('register.html')
 
 
+@app.route('/admin/manage')
+def admin_manage():
+    songs = Songs.query.all()
+    playlists = Playlist.query.all()
+    albums = Albums.query.all()
+    return render_template('admin_manage.html', songs=songs, playlists=playlists, albums=albums)
+
+
 @app.route('/song/<int:id>')
 def view_song(id):
     status = session.get('playpause', 'play')
     song = Songs.query.filter_by(id=id).first()
     a = session.get('current_song_id', 1)
     curr_song = Songs.query.filter_by(id=a).first()
+    if not curr_song:
+        curr_song = Songs.query.first()
     return render_template('viewsong.html', song=song, curr_song=curr_song, status=status)
+
+
+@app.route('/edit/song/<int:id>', methods=['POST', 'GET'])
+def edit_song(id):
+    song = Songs.query.get(id)
+    if request.method == 'POST':
+        song.name = request.form.get('song_name')
+        song.duration = request.form.get('song_duration')
+        song.genre = request.form.get('song_genre')
+        song.lyrics = request.form.get('song_lyrics')
+        db.session.commit()
+
+        return redirect(url_for('index'))
+    return render_template('edit_song.html', song=song)
+
+
+@app.route('/remove/song/<int:id>', methods=['POST', 'GET'])
+def remove_song(id):
+    song = Songs.query.get(id)
+    db.session.delete(song)
+    db.session.commit()
+    return redirect(url_for('index'))
 
 
 @app.route('/artist/<int:id>')
@@ -210,17 +245,67 @@ def user(id):
 @app.route('/album/<int:id>')
 def view_album(id):
     album = Albums.query.get(id)
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+    if not curr_song:
+        curr_song = Songs.query.first()
+    status = session.get('playpause', 'play')
     if album:
         album_songs = album.songs
-    return render_template('viewalbum.html', id=id, album_songs=album_songs, album=album)
+    return render_template('viewalbum.html', id=id, album_songs=album_songs, album=album, curr_song=curr_song, status=status)
+
+
+@app.route('/edit/album/<int:id>', methods=['POST', 'GET'])
+def edit_album(id):
+    album = Albums.query.get(id)
+    if request.method == 'POST':
+        album.name = request.form.get('album_name')
+        album.desc = request.form.get('album_desc')
+        db.session.commit()
+
+        return redirect(url_for('index'))
+    return render_template('edit_album.html', album=album)
+
+
+@app.route('/remove/album/<int:id>', methods=['POST', 'GET'])
+def remove_album(id):
+    album = Albums.query.get(id)
+    db.session.delete(album)
+    db.session.commit()
+    return redirect(url_for('index'))
 
 
 @app.route('/playlist/<int:id>')
 def view_playlist(id):
     playlist = Playlist.query.get(id)
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+    if not curr_song:
+        curr_song = Songs.query.first()
+    status = session.get('playpause', 'play')
     if playlist:
         playlist_songs = playlist.songs
-    return render_template('viewplaylist.html', id=id, playlist_songs=playlist_songs, playlist=playlist)
+    return render_template('viewplaylist.html', id=id, playlist_songs=playlist_songs, playlist=playlist, curr_song=curr_song, status=status)
+
+
+@app.route('/edit/playlist/<int:id>', methods=['POST', 'GET'])
+def edit_playlist(id):
+    playlist = Playlist.query.get(id)
+    if request.method == 'POST':
+        playlist.name = request.form.get('playlist_name')
+        playlist.desc = request.form.get('playlist_duration')
+        db.session.commit()
+
+        return redirect(url_for('index'))
+    return render_template('edit_playlist.html', playlist=playlist)
+
+
+@app.route('/remove/playlist/<int:id>', methods=['POST', 'GET'])
+def remove_playlist(id):
+    playlist = Playlist.query.get(id)
+    db.session.delete(playlist)
+    db.session.commit()
+    return redirect(url_for('index'))
 
 
 @app.route('/account')
@@ -298,6 +383,21 @@ def create_album():
     return render_template('create_playlist.html', songs=songs)
 
 
+@app.route('/manage/songs')
+def manage_songs():
+    return render_template('manage_songs.html')
+
+
+@app.route('/manage/playlists')
+def manage_playlists():
+    return render_template('manage_playlists.html')
+
+
+@app.route('/manage/albums')
+def manage_albums():
+    return render_template('manage_albums.html')
+
+
 @app.route('/login')
 def login():
     return render_template('login.html')
@@ -332,17 +432,6 @@ def play(song_id=1):
     return "Success"
 
 
-def get_next_song(playlist_id, current_song_id):
-    playlist = Playlist.query.get(playlist_id)
-    songs = playlist.songs
-    current_song_index = songs.index(Songs.query.get(current_song_id))
-
-    next_song_index = (current_song_index + 1) % len(songs)
-    next_song = songs[next_song_index]
-    if next_song:
-        play(next_song.id)
-
-
 @app.route('/next/<int:song_id>')
 def get_next_song(song_id):
     try:
@@ -365,12 +454,6 @@ def get_prev_song(song_id):
     if prev_song:
         play(prev_song.id)
     return "Success"
-
-
-def playlist_song(playlist_id):
-    playlist = Playlist.query.get(playlist_id)
-    first_song = playlist.songs[0]
-    play(first_song.id)
 
 
 if (__name__ == '__main__'):

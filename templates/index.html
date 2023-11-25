@@ -3,15 +3,14 @@
 {% block content %}
     <div class = "container-fluid mt-2">
         <div class="row row-cols-3">
-            <div class="col-md-2" id="col1">
-                <!-- <div class="shadow bg-outline-light rounded p-2"> -->
+            <div class="col-md-2 mt-2" id="col1">
                 <div class="row">
                     <div class="col-sm-3">
-                        <img src = "../static/react.svg" width="60px" class = "mt-1"/>
+                        <img src = "../static/react.svg" width="60px" class = "mt-2"/>
                     </div>
                     <div class="col">
-                        <h3>{{user}}</h3>
-                        <p>{{email}}</p>
+                        <h3 class="mt-1">{{user}}</h3>
+                        <p class="fw-light">{{email}}</p>
                         <a href="{{ url_for('login') }}" class = "btn btn-primary btn-sm mb-2" {{hide}}>Login</a>
                     </div>
                 </div>
@@ -21,6 +20,9 @@
                     <a href="{{ url_for('create_song') }}" class="btn btn-primary btn-block mb-2" {{log}}>New song</a>
                     <a href="{{ url_for('create_playlist') }}" class="btn btn-primary btn-block mb-2" {{log}}>New playlist</a>
                     <a href="{{ url_for('create_album') }}" class="btn btn-primary btn-block mb-2" {{log}}>New album</a>
+                    <a href="{{ url_for('manage_songs') }}" class="btn btn-primary btn-block mb-2" {{log}}>Manage songs</a>
+                    <a href="{{ url_for('manage_playlist') }}" class="btn btn-primary btn-block mb-2" {{log}}>Manage playlists</a>
+                    <a href="{{ url_for('manage_album') }}" class="btn btn-primary btn-block mb-2" {{log}}>Manage albums</a>
                     <a href="{{ url_for('logout') }}" class="btn btn-danger btn-block mb-2" {{log}}>Logout</a>
                 </div>
         </div>
@@ -62,7 +64,7 @@
                     <img src="static/uploads/{{song.img}}" class="card-img-top" style="width: 9rem; height: 9rem; object-fit: cover;">
                     <div class="card-body">
                       <h4 class="mt-1">{{song.name}}</h5>
-                      <h6>{{song.user.username}}</h6>
+                      <h6 class="fw-light">{{song.user.username}}</h6>
                     </div>
                   </a>
                   </div>
@@ -83,7 +85,7 @@
                     <img src="static/uploads/{{album.img}}" class="card-img-top" style="width: 9rem; height: 9rem; object-fit: cover;">
                     <div class="card-body">
                       <h4 class="mt-1">{{album.name}}</h4>
-                      <h6>addsa</h6>
+                      <h6 class="fw-light">{{album.user.username}}</h6>
                     </div>
                   </a>
                   </div>
@@ -104,7 +106,7 @@
                     <img src="static/uploads/{{playlist.img}}" class="card-img-top" style="width: 9rem; height: 9rem; object-fit: cover;">
                     <div class="card-body">
                       <h4 class="mt-1">{{playlist.name}}</h4>
-                      <h6>dasads</h6>
+                      <h6 class="fw-light">{{playlist.user.username}}</h6>
                     </div>
                   </a>
                   </div>
