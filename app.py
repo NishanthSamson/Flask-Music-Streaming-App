@@ -346,9 +346,16 @@ def remove_playlist(id):
     return redirect(url_for('index'))
 
 
-@app.route('/account')
+@app.route('/account', methods=['POST'])
 def account():
-    return render_template('account.html')
+    user = User.query.get(current_user.id)
+    if request.method == 'POST':
+        user.phone = request.form.get('phone')
+        user.gender = request.form.get('gender')
+        user.address = request.form.get('address')
+        db.session.commit()
+
+    return render_template('account.html', user=user)
 
 
 @app.route('/create/song', methods=['POST', 'GET'])
@@ -437,6 +444,20 @@ def manage_playlists():
 def manage_albums():
     albums = Albums.query.filter_by(creator_id=current_user.id)
     return render_template('manage_albums.html', albums=albums)
+
+
+@app.route('/accprofilepic', methods=['GET', 'POST'])
+def accprofilepic():
+    if request.method == 'POST':
+        file = request.files['img']
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            user = User.query.get(current_user.id)
+            user.img = filename
+            db.session.commit()
+            return redirect(url_for('index'))
+    return render_template('userpic.html')
 
 
 @app.route('/login')
