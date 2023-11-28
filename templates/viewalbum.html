@@ -1,32 +1,6 @@
 {% extends "base.html" %}
 
-{% block content %}    
-    <div class = "container-fluid mt-2">
-        <div class="row row-cols-3">
-            <div class="col-md-2" id="col1">
-                <!-- <div class="shadow bg-outline-light rounded p-2"> -->
-                <div class="row">
-                    <div class="col-sm-3">
-                        <img src = "../static/react.svg" width="80px" class = "mt-1"/>
-                    </div>
-                    <div class="col">
-                        <h3>{{user}}</h3>
-                        <p>{{email}}</p>
-                        <a href="{{ url_for('login') }}" class = "btn btn-primary btn-sm mb-2" {{hide}}>Login</a>
-                    </div>
-                </div>
-            
-                <div class="menu-btns">
-                    <br>
-                    <a href="{{ url_for('create_song') }}" class="btn btn-primary btn-block mb-2" {{log}}>New song</a>
-                    <a href="{{ url_for('create_playlist') }}" class="btn btn-primary btn-block mb-2" {{log}}>New playlist</a>
-                    <a href="{{ url_for('create_album') }}" class="btn btn-primary btn-block mb-2" {{log}}>New album</a>
-                    <a href="{{ url_for('logout') }}" class="btn btn-danger btn-block mb-2" {{log}}>Logout</a>
-                </div>
-        </div>
-
-        
-        
+{% block content %}            
         <div class="col-md-8" id="col2">
           
             <div class="shadow p-1 mb-1 bg-outline-dark rounded">
@@ -63,7 +37,6 @@
               <h6>{{song.user.username}}</h6>
             </div>
             <div class="col-md-2">
-              <!-- <h6 class = "mt-4 ms-3">{{song.duration}}</h6> -->
               <img id="playPauseBtnMenu" src="{{ url_for('static', filename='play.png') }}" width="50px" onclick="Play({{song.id}})">
             </div>
           </div>

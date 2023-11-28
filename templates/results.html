@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <div class="col-md-8" id="col2">
+            <div class="container-fluid">
+                <h2 class = "mt-3 mb-2">Songs</h2>
+                <div class="row">
+                {% for song in songs %}
+                <div class="col-sm-2">
+                  <a href="{{ url_for('view_song', id=song.id) }}" class="text-decoration-none text-reset">
+                  <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem;" id="songgroup">
+                    <div class="shadow p-2 mb-1 bg-outline-light rounded">
+                    <img src="{{ url_for('static', filename='uploads/' + song.img) }}" class="card-img-top rounded" style="width: 9rem; height: 9rem; object-fit: cover;">
+                    <div class="card-body">
+                      <h4 class="mt-1">{{song.name}}</h5>
+                      <h6 class="fw-light">{{song.user.username}}</h6>
+                    </div>
+                  </a>
+                  </div>
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+            </div>
+
+            <div class="container-fluid">
+                <h2 class = "mt-2 mb-2">Albums</h2>
+                <div class="row">
+                {% for album in albums %}
+                <div class="col-sm-2">
+                    <a href="{{ url_for('view_album', id=album.id) }}" class="text-decoration-none text-reset">
+                    <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem;" id="playlistgroup">
+                    <div class="shadow p-2 mb-1 bg-outline-light rounded">
+                    <img src="{{ url_for('static', filename='uploads/' + album.img) }}" class="card-img-top rounded" style="width: 9rem; height: 9rem; object-fit: cover;">
+                    <div class="card-body">
+                      <h4 class="mt-1">{{album.name}}</h4>
+                      <h6 class="fw-light">{{album.user.username}}</h6>
+                    </div>
+                  </a>
+                  </div>
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+            </div>
+
+            <div class="container-fluid">
+                <h2 class = "mt-2 mb-2">Playlists</h2>
+                <div class="row">
+                {% for playlist in playlists %}
+                <div class="col-sm-2">
+                <a href="{{ url_for('view_playlist', id=playlist.id) }}" class="text-decoration-none text-reset">
+                    <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem;" id="playlistgroup">
+                    <div class="shadow p-2 mb-1 bg-outline-dark rounded">
+                    <img src="{{ url_for('static', filename='uploads/' + playlist.img) }}" class="card-img-top rounded" style="width: 9rem; height: 9rem; object-fit: cover;">
+                    <div class="card-body">
+                      <h4 class="mt-1">{{playlist.name}}</h4>
+                      <h6 class="fw-light">{{playlist.user.username}}</h6>
+                    </div>
+                  </a>
+                  </div>
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+            </div>
+        </div>
+{% endblock %}

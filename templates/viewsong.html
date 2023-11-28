@@ -1,42 +1,35 @@
 {% extends "base.html" %}
 
-{% block content %}
-    <div class = "container-fluid mt-2">
-        <div class="row row-cols-3">
-            <div class="col-md-2 mt-2" id="col1">
-                <div class="row">
-                    <div class="col-sm-3">
-                        <img src = "../static/react.svg" width="60px" class = "mt-2"/>
-                    </div>
-                    <div class="col">
-                        <h3 class="mt-1">{{user}}</h3>
-                        <p class="fw-light">{{email}}</p>
-                        <a href="{{ url_for('login') }}" class = "btn btn-primary btn-sm mb-2" {{hide}}>Login</a>
-                    </div>
-                </div>
-            
-                <div class="menu-btns">
-                    <br>
-                    <a href="{{ url_for('create_song') }}" class="btn btn-primary btn-block mb-2" {{log}}>New song</a>
-                    <a href="{{ url_for('create_playlist') }}" class="btn btn-primary btn-block mb-2" {{log}}>New playlist</a>
-                    <a href="{{ url_for('create_album') }}" class="btn btn-primary btn-block mb-2" {{log}}>New album</a>
-                    <a href="{{ url_for('logout') }}" class="btn btn-danger btn-block mb-2" {{log}}>Logout</a>
-                </div>
-        </div>
-        
+{% block content %}        
         <div class="col-md-8" id="col2">
-          <div class="shadow p-4 mb-1 bg-outline-dark rounded">
+          <div class="shadow p-1 mb-1 me-4 bg-outline-dark rounded">
             <div class="row">
             <div class="col-md-3">
-              <img src="{{ url_for('static', filename='uploads/' + song.img) }}" style="width: 15rem; height: 15rem; object-fit: cover;">
+              <img src="{{ url_for('static', filename='uploads/' + song.img) }}" class="rounded" style="width: 15rem; height: 15rem; object-fit: cover;">
             </div>
             <div class="col-md-9">
-              <h1 class = "ms-2">{{song.name}}</h1>
-              <h5 class = "ms-2 fw-light">{{song.user.username}}</h5>
-              <img id="playPauseBtnMenu" src="{{ url_for('static', filename='play.png') }}" width="50px" onclick="Play( {{song.id}} )">
+              <h1 class = "ms-4">{{song.name}}</h1>
+              <a href="{{ url_for('view_user_profile', user_id=song.user.id) }}" class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"><h5 class = "ms-4 fw-light">{{song.user.username}}</h5></a>
+              <p class = "ms-4 fw-bold mt-3 link-info">Rating: {{ rating }}</p>
+              <img id="playPauseBtnMenu" class = "ms-3" src="{{ url_for('static', filename='play.png') }}" width="50px" onclick="Play( {{song.id}} )">
             </div>
           </div>
         </div>
+        <form action="{{ url_for('submit_rating', song_id=song.id) }}" method="post">
+          <div class="form-group mt-2">
+          <label for="rating">Rate this song:</label>
+          <select class="form-control mb-2" style="width: 130px;" name="rating" id="rating">
+              <option value="5">5 stars</option>
+              <option value="4">4 stars</option>
+              <option value="3">3 stars</option>
+              <option value="2">2 stars</option>
+              <option value="1">1 star</option>
+          </select>
+        </div>
+          <button type="submit" class="btn btn-secondary">Submit Rating</button>
+      </form>
+      <h4 class="fw-semi-bold mt-3">Lyrics</h4>
+      <h6 class="fw-light ms-2 me-2">{{curr_song.lyrics}}</h6>
         </div>
         <script>
           function Play(id) {

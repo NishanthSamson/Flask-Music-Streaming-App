@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="../static/app.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
     <title>Music Player</title>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary p-2">
         <div class="container-fluid">
-          <a class="navbar-brand" href="{{ url_for('index') }}"><img src = "../static/react.svg" width="30px" /></a>
+          <a class="navbar-brand" href="{{ url_for('index') }}"><img src = "{{ url_for('static', filename='react.svg') }}" width="30px" /></a>
             <h4 class = "me-5 mt-2">                   </h4>
-            <form class="d-flex justify-content-start w-25 me-auto" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <form class="d-flex justify-content-start w-25 me-auto" role="search" method="post" action="{{ url_for('search_results')}}">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="queryString">
                 <button class="btn btn-outline-primary" type="submit">Search</button>
             </form>
             <div class = "d-flex me-5">
@@ -22,12 +22,37 @@
             
           </div>
       </nav>
+      <div class = "container-fluid mt-2">
+        <div class="row row-cols-3">
+            <div class="col-md-2 mt-2" id="col1">
+                <div class="row mt-3">
+                    <a href="{{url_for('account')}}" class="d-flex justify-content-center" >
+                        <img src = "{{ url_for('static', filename='uploads/' + user.img) }}" class="mt-2 rounded-circle" width="120px" height="120px" class = "mt-2" style="object-fit: cover;"/>
+                    </a>
+                    <div class="col mb-3">
+                        <h3 class="mt-3 d-flex justify-content-center">{{user.username}}</h3>
+                        <p class="fw-light d-flex justify-content-center">{{user.email}}</p>
+                        <a href="{{ url_for('login') }}" class = "btn btn-primary btn-sm mb-2" {{hide}}>Login</a>
+                </div>
+            
+                <div class="menu-btns mt-3">
+                    <a href="{{ url_for('create_song') }}" class="btn btn-primary btn-block mb-2 col-12 custom-btn" {{log}}>New Song</a>
+                    <a href="{{ url_for('create_playlist') }}" class="btn btn-primary btn-block mb-2 col-12 custom-btn" {{log}}>New Playlist</a>
+                    <a href="{{ url_for('create_album') }}" class="btn btn-primary btn-block mb-2 col-12 custom-btn" {{log}}>New Album</a>
+                    <a href="{{ url_for('manage_songs') }}" class="btn btn-primary btn-block mb-2 col-12 custom-btn" {{log}}>Manage Songs</a>
+                    <a href="{{ url_for('manage_playlists') }}" class="btn btn-primary btn-block mb-2 col-12 custom-btn" {{log}}>Manage Playlists</a>
+                    <a href="{{ url_for('manage_albums') }}" class="btn btn-primary btn-block mb-2 col-12 custom-btn" {{log}}>Manage Albums</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-block mb-2 col-12" {{log}}>Logout</a>
+                </div>
+            </div>
+        </div>
 
 {% block content %}{% endblock %}
 <div class="col-md-2" id="col3">
-        <img src="{{ url_for('static', filename='uploads/' + curr_song.img) }}" class="me-5" alt="cover" style="width: 15.5rem; height: 15.5rem; object-fit: cover;">
-        <h3>{{curr_song.name}}</h3>
+        <img src="{{ url_for('static', filename='uploads/' + curr_song.img) }}" class="me-5 rounded" alt="cover" style="width: 15.5rem; height: 15.5rem; object-fit: cover;">
+        <h3 class="mt-2">{{curr_song.name}}</h3>
         <h6 class="fw-light">{{curr_song.user.username}}</h6>
+
 </div>
 </div>
 </div>

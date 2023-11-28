@@ -1,22 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Playlist</title>
-</head>
-<body>
-    <form method="POST" enctype="multipart/form-data">
-        <input type="text" placeholder="Name" name="name">
-        <input type="file" placeholder="Image" name = "img">
-        <textarea rows="4" cols="30" name="desc"></textarea>
-        {% for song in songs %}
-        <label>
-            <input type="checkbox" name="selected_songs" value="{{ song.id }}">
-            {{ song.name }} - {{ song.user.email }} - {{ song.duration }}
-        </label><br>
-        {% endfor %}
-        <input type="submit" value="upload">        
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="col-md-8" id="col2">
+<form method="POST" class="ms-5 me-5" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="name" class="form-label">Name:</label>
+        <input type="text" class="form-control" id="name" placeholder="Name" name="name">
+    </div>
+
+    <div class="mb-3">
+        <label for="image" class="form-label">Image:</label>
+        <input type="file" class="form-control" id="image" placeholder="Image" name="img">
+    </div>
+
+    <div class="mb-3">
+        <label for="description" class="form-label">Description:</label>
+        <textarea rows="4" cols="30" class="form-control" id="description" name="desc"></textarea>
+    </div>
+
+    {% for song in songs %}
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="song{{ song.id }}" name="selected_songs" value="{{ song.id }}">
+        <label class="form-check-label" for="song{{ song.id }}">
+            {{ song.name }} - {{ song.user.username }}
+        </label>
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@ from flask_bcrypt import *
 import os
 import pygame
 from mutagen.mp3 import MP3
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -59,9 +60,11 @@ class Songs(db.Model):
     name = db.Column(db.String(200), nullable=False)
     song = db.Column(db.String(300))
     img = db.Column(db.String(300))
-    duration = db.Column(db.Integer)
+    duration = db.Column(db.String(10))
     genre = db.Column(db.String(50))
-    rating = db.Column(db.Float)
+    rating = db.Column(db.Float, default=0.0)
+    num_ratings = db.Column(db.Integer, default=0)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
     popularity = db.Column(db.Integer, default=0)
     lyrics = db.Column(db.String(3000))
     artist_id = db.Column(db.Integer, db.ForeignKey(
@@ -146,24 +149,35 @@ with app.app_context():
 pygame.mixer.init()
 
 
+def show():
+    auth = current_user.is_authenticated
+    if not auth:
+        user = User(username='login', email=' ', img='default.png')
+        log, hide = "hidden", ""
+    else:
+        user = User.query.get(current_user.id)
+        log, hide = "", "hidden"
+    return user, log, hide
+
+
 @app.route('/')
 def index():
     if current_user.is_authenticated and current_user.username == 'admin':
-        return redirect(url_for('admin_manage'))
+        return redirect(url_for('admin_manage_content'))
     a = session.get('current_song_id', 1)
     curr_song = Songs.query.filter_by(id=a).first()
     if not curr_song:
-        curr_song = Songs(name='None', img='default.png')
+        curr_song = Songs(name='', img='default.png')
+
     status = session.get('playpause', 'play')
-    auth = current_user.is_authenticated
-    user = "login" if not auth else current_user.username
-    email = "" if not auth else current_user.email
-    hide = "" if not auth else "hidden"
-    log = "hidden" if not auth else ""
-    songs = Songs.query.all()
+
+    user, log, hide = show()
+
+    songs = Songs.query.order_by(Songs.date_added.desc()).all()
     playlists = Playlist.query.all()
     albums = Albums.query.all()
-    return render_template('index.html', songs=songs, playlists=playlists, user=user, email=email, hide=hide, log=log, albums=albums, curr_song=curr_song, status=status)
+
+    return render_template('index.html', songs=songs, playlists=playlists, hide=hide, log=log, albums=albums, curr_song=curr_song, status=status, user=user)
 
 
 @app.route('/register', methods=['POST', 'GET'])
@@ -191,12 +205,28 @@ def register():
     return render_template('register.html')
 
 
-@app.route('/admin/manage')
-def admin_manage():
+@app.route('/admin/manage/content')
+def admin_manage_content():
     songs = Songs.query.all()
     playlists = Playlist.query.all()
     albums = Albums.query.all()
-    return render_template('admin_manage.html', songs=songs, playlists=playlists, albums=albums)
+    return render_template('admin_manage_content.html', songs=songs, playlists=playlists, albums=albums)
+
+
+@app.route('/admin/manage/users')
+def admin_manage_users():
+
+    users = User.query.filter(User.id != 1).all()
+    return render_template('admin_manage_users.html', users=users)
+
+
+@app.route('/remove/user/<int:id>')
+def remove_user(id):
+    if id != 1:
+        user = User.query.get(id)
+        db.session.delete(user)
+        db.session.commit()
+    return redirect(url_for('index'))
 
 
 @app.route('/song/<int:id>')
@@ -205,9 +235,16 @@ def view_song(id):
     song = Songs.query.filter_by(id=id).first()
     a = session.get('current_song_id', 1)
     curr_song = Songs.query.filter_by(id=a).first()
+    user, log, hide = show()
+    if song.rating != 0:
+        rating = round((song.rating/song.num_ratings), 2)
+    else:
+        rating = 0
     if not curr_song:
-        curr_song = Songs.query.first()
-    return render_template('viewsong.html', song=song, curr_song=curr_song, status=status)
+        curr_song = Songs(name='', img='default.png')
+    song.popularity += 1
+    db.session.commit()
+    return render_template('viewsong.html', song=song, curr_song=curr_song, status=status, user=user, log=log, hide=hide, rating=rating)
 
 
 @app.route('/edit/song/<int:id>', methods=['POST', 'GET'])
@@ -235,27 +272,18 @@ def remove_song(id):
     return redirect(url_for('index'))
 
 
-@app.route('/artist/<int:id>')
-def artist(id):
-    return render_template('artist.html', id=id)
-
-
-@app.route('/user/<int:id>')
-def user(id):
-    return render_template('user.html', id=id)
-
-
 @app.route('/album/<int:id>')
 def view_album(id):
     album = Albums.query.get(id)
     a = session.get('current_song_id', 1)
     curr_song = Songs.query.filter_by(id=a).first()
     if not curr_song:
-        curr_song = Songs.query.first()
+        curr_song = Songs(name='', img='default.png')
     status = session.get('playpause', 'play')
+    user, log, hide = show()
     if album:
         album_songs = album.songs
-    return render_template('viewalbum.html', id=id, album_songs=album_songs, album=album, curr_song=curr_song, status=status)
+    return render_template('viewalbum.html', id=id, album_songs=album_songs, album=album, curr_song=curr_song, status=status, user=user, log=log, hide=hide)
 
 
 @app.route('/edit/album/<int:id>', methods=['POST', 'GET'])
@@ -301,11 +329,12 @@ def view_playlist(id):
     a = session.get('current_song_id', 1)
     curr_song = Songs.query.filter_by(id=a).first()
     if not curr_song:
-        curr_song = Songs.query.first()
+        curr_song = Songs(name='', img='default.png')
     status = session.get('playpause', 'play')
+    user, log, hide = show()
     if playlist:
         playlist_songs = playlist.songs
-    return render_template('viewplaylist.html', id=id, playlist_songs=playlist_songs, playlist=playlist, curr_song=curr_song, status=status)
+    return render_template('viewplaylist.html', id=id, playlist_songs=playlist_songs, playlist=playlist, curr_song=curr_song, status=status, user=user, log=log, hide=hide)
 
 
 @app.route('/edit/playlist/<int:id>', methods=['POST', 'GET'])
@@ -346,7 +375,7 @@ def remove_playlist(id):
     return redirect(url_for('index'))
 
 
-@app.route('/account', methods=['POST'])
+@app.route('/account', methods=['POST', 'GET'])
 def account():
     user = User.query.get(current_user.id)
     if request.method == 'POST':
@@ -361,6 +390,12 @@ def account():
 @app.route('/create/song', methods=['POST', 'GET'])
 def create_song():
     uid = current_user.id
+    status = session.get('playpause', 'play')
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+    user, log, hide = show()
+    if not curr_song:
+        curr_song = Songs(name='', img='default.png')
     if request.method == 'POST':
         file = request.files['song']
         if file:
@@ -373,16 +408,22 @@ def create_song():
             cover.save(os.path.join(app.config['UPLOAD_FOLDER'], covername))
 
         new_song = Songs(name=request.form.get('name'),
-                         genre=request.form.get('genre'), duration=request.form.get('duration'), artist_id=uid, song=filename, img=covername)
+                         genre=request.form.get('genre'), duration=request.form.get('duration'), artist_id=uid, lyrics=request.form.get('lyrics'), song=filename, img=covername)
         db.session.add(new_song)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('create_song.html')
+    return render_template('create_song.html', hide=hide, log=log, curr_song=curr_song, status=status, user=user)
 
 
 @app.route('/create/playlist', methods=['POST', 'GET'])
 def create_playlist():
     uid = current_user.id
+    status = session.get('playpause', 'play')
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+    user, log, hide = show()
+    if not curr_song:
+        curr_song = Songs(name='', img='default.png')
     if request.method == 'POST':
         file = request.files['img']
         if file:
@@ -401,12 +442,19 @@ def create_playlist():
 
         return redirect(url_for('index'))
     songs = Songs.query.all()
-    return render_template('create_playlist.html', songs=songs)
+    return render_template('create_playlist.html', songs=songs, hide=hide, log=log, curr_song=curr_song, status=status, user=user)
 
 
 @app.route('/create/album', methods=['POST', 'GET'])
 def create_album():
     uid = current_user.id
+    uid = current_user.id
+    status = session.get('playpause', 'play')
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+    user, log, hide = show()
+    if not curr_song:
+        curr_song = Songs(name='', img='default.png')
     if request.method == 'POST':
         file = request.files['img']
         if file:
@@ -425,7 +473,7 @@ def create_album():
 
         return redirect(url_for('index'))
     songs = Songs.query.filter_by(artist_id=uid)
-    return render_template('create_playlist.html', songs=songs)
+    return render_template('create_playlist.html', songs=songs, hide=hide, log=log, curr_song=curr_song, status=status, user=user)
 
 
 @app.route('/manage/songs')
@@ -460,6 +508,29 @@ def accprofilepic():
     return render_template('userpic.html')
 
 
+@app.route('/search/results/', methods=['GET', 'POST'])
+def search_results():
+    status = session.get('playpause', 'play')
+    user, log, hide = show()
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+    if not curr_song:
+        curr_song = Songs(name='', img='default.png')
+    query_string = request.form.get('queryString')
+    songs = Songs.query.filter(
+        db.or_(
+            Songs.name.ilike(f"%{query_string}%"),
+            Songs.genre.ilike(f"%{query_string}%")
+        )
+    ).all()
+    playlists = Playlist.query.filter(
+        Playlist.name.ilike(f"%{query_string}%")).all()
+    albums = Albums.query.filter(
+        Albums.name.ilike(f"%{query_string}%")).all()
+
+    return render_template('results.html', songs=songs, playlists=playlists, albums=albums, status=status, user=user, log=log, hide=hide, curr_song=curr_song)
+
+
 @app.route('/login')
 def login():
     return render_template('login.html')
@@ -492,6 +563,75 @@ def play(song_id=1):
     session['current_song_id'] = song_id
     session['playpause'] = 'pause'
     return "Success"
+
+
+@app.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    if not current_user.has_role('admin'):
+        return redirect(url_for('index'))
+
+    total_users = User.query.count()
+    total_artists = User.query.filter(User.roles.any(name='artist')).count()
+    total_songs = Songs.query.count()
+
+    genre_stats = db.session.query(User.gender, Songs.genre, db.func.count().label('count')) \
+        .join(Songs, User.id == Songs.artist_id) \
+        .group_by(User.gender, Songs.genre).all()
+
+    country_stats = db.session.query(User.address, Songs.name, db.func.count().label('count')) \
+        .join(Songs, User.id == Songs.artist_id) \
+        .group_by(User.address, Songs.name).all()
+    return render_template('admin_dashboard.html',
+                           total_users=total_users,
+                           total_artists=total_artists,
+                           total_songs=total_songs,
+                           genre_stats=genre_stats,
+                           country_stats=country_stats)
+
+
+@app.route('/submit_rating/<int:song_id>', methods=['POST'])
+def submit_rating(song_id):
+    song = Songs.query.get(song_id)
+    if not song:
+        flash("Song not found")
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        rating = int(request.form.get('rating'))
+        new_rating = song.rating + rating
+        new_num = song.num_ratings + 1
+        song.rating = new_rating
+        song.num_ratings = new_num
+        db.session.commit()
+
+        rate = "hidden"
+
+        flash("Rating submitted successfully")
+
+    return redirect(url_for('view_song', id=song_id))
+
+
+@app.route('/user/<int:user_id>')
+def view_user_profile(user_id):
+    vuser = User.query.get(user_id)
+    status = session.get('playpause', 'play')
+    a = session.get('current_song_id', 1)
+    curr_song = Songs.query.filter_by(id=a).first()
+    user, log, hide = show()
+
+    user_songs = Songs.query.filter_by(artist_id=user_id).all()
+    user_playlists = Playlist.query.filter_by(creator_id=user_id).all()
+    user_albums = Albums.query.filter_by(creator_id=user_id).all()
+
+    if not curr_song:
+        curr_song = Songs(name='', img='default.png')
+    if not user:
+        flash("User not found")
+        return redirect(url_for('index'))
+
+    return render_template('user_profile.html', vuser=vuser, hide=hide, log=log, curr_song=curr_song, status=status, user=user,
+                           songs=user_songs, playlists=user_playlists, albums=user_albums)
 
 
 @app.route('/next/<int:song_id>')

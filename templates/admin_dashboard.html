@@ -1,0 +1,19 @@
+  <h1>Admin Dashboard</h1>
+
+  <p>Total Users: {{ total_users }}</p>
+  <p>Total Artists: {{ total_artists }}</p>
+  <p>Total Songs: {{ total_songs }}</p>
+
+  <h2>Preferred Genres by Gender</h2>
+  <ul>
+    {% for gender, genre, count in genre_stats %}
+      <li>{{ gender }} - {{ genre }}: {{ count }} songs</li>
+    {% endfor %}
+  </ul>
+
+  <h2>Popular Songs by Country</h2>
+  <ul>
+    {% for country, song, count in country_stats %}
+      <li>{{ country }} - {{ song }}: {{ count }} listens</li>
+    {% endfor %}
+  </ul>
