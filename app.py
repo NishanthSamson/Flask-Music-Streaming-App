@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 from flask_bcrypt import *
 import os
 import pygame
+import plotly.express as px
+import plotly.graph_objs as go
 from mutagen.mp3 import MP3
 from datetime import datetime
 
@@ -575,19 +577,32 @@ def admin_dashboard():
     total_artists = User.query.filter(User.roles.any(name='artist')).count()
     total_songs = Songs.query.count()
 
-    genre_stats = db.session.query(User.gender, Songs.genre, db.func.count().label('count')) \
-        .join(Songs, User.id == Songs.artist_id) \
-        .group_by(User.gender, Songs.genre).all()
+    gender_stats = db.session.query(User.gender, db.func.count().label('count')) \
+        .group_by(User.gender).all()
+    gender_labels = [stat[0] if stat[0]
+                     else 'Not Specified' for stat in gender_stats]
+    gender_counts = [stat[1] for stat in gender_stats]
 
-    country_stats = db.session.query(User.address, Songs.name, db.func.count().label('count')) \
-        .join(Songs, User.id == Songs.artist_id) \
-        .group_by(User.address, Songs.name).all()
+    gender_chart = go.Figure(data=[go.Bar(x=gender_labels, y=gender_counts)])
+    gender_chart.update_layout(
+        title_text='Gender Distribution', xaxis_title='Gender', yaxis_title='Count')
+
+    country_stats = db.session.query(User.address, db.func.count().label('count')) \
+        .group_by(User.address).all()
+    country_labels = [stat[0] if stat[0]
+                      else 'Not Specified' for stat in country_stats]
+    country_counts = [stat[1] for stat in country_stats]
+
+    country_chart = go.Figure(
+        data=[go.Pie(labels=country_labels, values=country_counts)])
+    country_chart.update_layout(title_text='Country-wise Song Count')
+
     return render_template('admin_dashboard.html',
                            total_users=total_users,
                            total_artists=total_artists,
                            total_songs=total_songs,
-                           genre_stats=genre_stats,
-                           country_stats=country_stats)
+                           gender_chart=gender_chart.to_html(full_html=False),
+                           country_chart=country_chart.to_html(full_html=False))
 
 
 @app.route('/submit_rating/<int:song_id>', methods=['POST'])
