@@ -1,12 +1,31 @@
+<html data-bs-theme="dark">
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
 <div class="container-md-6">
-    <h2 class="mt-5">Edit Song Details</h2>
-    <form method="POST">
-      <div class="input-group mb-3">
-        <input type="text" class="form-control" value="{{song.name}}" name="song_name" required>
-        <input type="text" class="form-control" value="{{song.duration}}" name="song_duration" required>
-        <input type="text" class="form-control" value="{{song.genre}}" name="song_genre" required>
-        <input type="text" class="form-control" value="{{song.lyrics}}" name="song_lyrics" required>
-        <button class="btn btn-primary" type="submit">Edit</button>
+  <div class="container py-4">
+  <h2 class="mt-5 mb-4">Edit Song Details</h2>
+  <form method="POST">
+      <div class="mb-3">
+          <label for="song_name" class="form-label">Song Name</label>
+          <input type="text" class="form-control" id="song_name" value="{{song.name}}" name="song_name" required>
       </div>
-    </form>
+      <div class="mb-3">
+          <label for="song_duration" class="form-label">Duration</label>
+          <input type="text" class="form-control" id="song_duration" value="{{song.duration}}" name="song_duration" required>
+      </div>
+      <div class="mb-3">
+          <label for="song_genre" class="form-label">Genre</label>
+          <input type="text" class="form-control" id="song_genre" value="{{song.genre}}" name="song_genre" required>
+      </div>
+      <div class="mb-3">
+          <label for="song_lyrics" class="form-label">Lyrics</label>
+          <textarea class="form-control" id="song_lyrics" name="song_lyrics" rows="3" required>{{song.lyrics}}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Edit</button>
+  </form>
   </div>
+</div>
+</body>
+</html>

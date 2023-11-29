@@ -165,7 +165,7 @@ def show():
 
 @app.route('/')
 def index():
-    if current_user.is_authenticated and current_user.username == 'admin':
+    if current_user.has_role('admin'):
         return redirect(url_for('admin_manage_content'))
     a = session.get('current_song_id', 1)
     curr_song = Songs.query.filter_by(id=a).first()
@@ -209,7 +209,10 @@ def register():
 
 
 @app.route('/admin/manage/content')
+@login_required
 def admin_manage_content():
+    if not current_user.has_role('admin'):
+        return redirect(url_for('index'))
     songs = Songs.query.all()
     playlists = Playlist.query.all()
     albums = Albums.query.all()
@@ -217,14 +220,19 @@ def admin_manage_content():
 
 
 @app.route('/admin/manage/users')
+@login_required
 def admin_manage_users():
-
+    if not current_user.has_role('admin'):
+        return redirect(url_for('index'))
     users = User.query.filter(User.id != 1).all()
     return render_template('admin_manage_users.html', users=users)
 
 
 @app.route('/remove/user/<int:id>')
+@login_required
 def remove_user(id):
+    if not current_user.has_role('admin'):
+        return redirect(url_for('index'))
     if id != 1:
         user = User.query.get(id)
         db.session.delete(user)
@@ -233,6 +241,7 @@ def remove_user(id):
 
 
 @app.route('/song/<int:id>')
+@login_required
 def view_song(id):
     status = session.get('playpause', 'play')
     song = Songs.query.filter_by(id=id).first()
@@ -251,9 +260,10 @@ def view_song(id):
 
 
 @app.route('/edit/song/<int:id>', methods=['POST', 'GET'])
+@login_required
 def edit_song(id):
     song = Songs.query.get(id)
-    if current_user.id == song.artist_id or current_user.id == 1:
+    if current_user.id == song.artist_id or current_user.has_role('admin'):
         if request.method == 'POST':
             song.name = request.form.get('song_name')
             song.duration = request.form.get('song_duration')
@@ -267,15 +277,17 @@ def edit_song(id):
 
 
 @app.route('/remove/song/<int:id>', methods=['POST', 'GET'])
+@login_required
 def remove_song(id):
     song = Songs.query.get(id)
-    if current_user.id == song.artist_id or current_user.id == 1:
+    if current_user.id == song.artist_id or current_user.has_role('admin'):
         db.session.delete(song)
         db.session.commit()
     return redirect(url_for('index'))
 
 
 @app.route('/album/<int:id>')
+@login_required
 def view_album(id):
     album = Albums.query.get(id)
     a = session.get('current_song_id', 1)
@@ -290,6 +302,7 @@ def view_album(id):
 
 
 @app.route('/edit/album/<int:id>', methods=['POST', 'GET'])
+@login_required
 def edit_album(id):
     album = Albums.query.get(id)
     if current_user.id == album.creator_id or current_user.id == 1:
@@ -306,7 +319,7 @@ def edit_album(id):
                 song_to_remove = Songs.query.get(song_id_to_remove)
                 album.songs.remove(song_to_remove)
 
-            if request.form.get('playlist_name') and request.form.get('playlist_duration'):
+            if request.form.get('album_name') and request.form.get('album_desc'):
                 album.name = request.form.get('album_name')
                 album.desc = request.form.get('album_desc')
 
@@ -318,15 +331,17 @@ def edit_album(id):
 
 
 @app.route('/remove/album/<int:id>', methods=['POST', 'GET'])
+@login_required
 def remove_album(id):
     album = Albums.query.get(id)
-    if current_user.id == album.creator_id or current_user.id == 1:
+    if current_user.id == album.creator_id or current_user.has_role('admin'):
         db.session.delete(album)
         db.session.commit()
     return redirect(url_for('index'))
 
 
 @app.route('/playlist/<int:id>')
+@login_required
 def view_playlist(id):
     playlist = Playlist.query.get(id)
     a = session.get('current_song_id', 1)
@@ -341,6 +356,7 @@ def view_playlist(id):
 
 
 @app.route('/edit/playlist/<int:id>', methods=['POST', 'GET'])
+@login_required
 def edit_playlist(id):
     playlist = Playlist.query.get(id)
     if current_user.id == playlist.creator_id or current_user.id == 1:
@@ -358,9 +374,9 @@ def edit_playlist(id):
                 song_to_remove = Songs.query.get(song_id_to_remove)
                 playlist.songs.remove(song_to_remove)
 
-            if request.form.get('playlist_name') and request.form.get('playlist_duration'):
+            if request.form.get('playlist_name') and request.form.get('playlist_desc'):
                 playlist.name = request.form.get('playlist_name')
-                playlist.desc = request.form.get('playlist_duration')
+                playlist.desc = request.form.get('playlist_desc')
 
             db.session.commit()
 
@@ -370,15 +386,17 @@ def edit_playlist(id):
 
 
 @app.route('/remove/playlist/<int:id>', methods=['POST', 'GET'])
+@login_required
 def remove_playlist(id):
     playlist = Playlist.query.get(id)
-    if current_user.id == playlist.creator_id or current_user.id == 1:
+    if current_user.id == playlist.creator_id or current_user.has_role('admin'):
         db.session.delete(playlist)
         db.session.commit()
     return redirect(url_for('index'))
 
 
 @app.route('/account', methods=['POST', 'GET'])
+@login_required
 def account():
     user = User.query.get(current_user.id)
     if request.method == 'POST':
@@ -391,6 +409,7 @@ def account():
 
 
 @app.route('/create/song', methods=['POST', 'GET'])
+@login_required
 def create_song():
     uid = current_user.id
     status = session.get('playpause', 'play')
@@ -419,6 +438,7 @@ def create_song():
 
 
 @app.route('/create/playlist', methods=['POST', 'GET'])
+@login_required
 def create_playlist():
     uid = current_user.id
     status = session.get('playpause', 'play')
@@ -449,6 +469,7 @@ def create_playlist():
 
 
 @app.route('/create/album', methods=['POST', 'GET'])
+@login_required
 def create_album():
     uid = current_user.id
     uid = current_user.id
@@ -480,24 +501,28 @@ def create_album():
 
 
 @app.route('/manage/songs')
+@login_required
 def manage_songs():
     songs = Songs.query.filter_by(artist_id=current_user.id)
     return render_template('manage_songs.html', songs=songs)
 
 
 @app.route('/manage/playlists')
+@login_required
 def manage_playlists():
     playlists = Playlist.query.filter_by(creator_id=current_user.id)
     return render_template('manage_playlists.html', playlists=playlists)
 
 
 @app.route('/manage/albums')
+@login_required
 def manage_albums():
     albums = Albums.query.filter_by(creator_id=current_user.id)
     return render_template('manage_albums.html', albums=albums)
 
 
 @app.route('/accprofilepic', methods=['GET', 'POST'])
+@login_required
 def accprofilepic():
     if request.method == 'POST':
         file = request.files['img']
@@ -540,11 +565,13 @@ def login():
 
 
 @app.route('/logout')
+@login_required
 def logout():
     return redirect(url_for('index'))
 
 
 @app.route('/play_pause')
+@login_required
 def play_pause():
     if pygame.mixer.music.get_busy():
         pygame.mixer.music.pause()
@@ -556,6 +583,7 @@ def play_pause():
 
 
 @app.route('/play/<int:song_id>')
+@login_required
 def play(song_id=1):
     song = Songs.query.filter_by(id=song_id).first()
     full_path = os.path.join('static/uploads', song.song)
@@ -622,6 +650,7 @@ def admin_dashboard():
 
 
 @app.route('/submit_rating/<int:song_id>', methods=['POST'])
+@login_required
 def submit_rating(song_id):
     song = Songs.query.get(song_id)
     if not song:
@@ -644,6 +673,7 @@ def submit_rating(song_id):
 
 
 @app.route('/user/<int:user_id>')
+@login_required
 def view_user_profile(user_id):
     vuser = User.query.get(user_id)
     status = session.get('playpause', 'play')
@@ -666,6 +696,7 @@ def view_user_profile(user_id):
 
 
 @app.route('/next/<int:song_id>')
+@login_required
 def get_next_song(song_id):
     try:
         a = int(song_id) + 1
@@ -678,6 +709,7 @@ def get_next_song(song_id):
 
 
 @app.route('/prev/<int:song_id>')
+@login_required
 def get_prev_song(song_id):
     try:
         a = int(song_id) - 1

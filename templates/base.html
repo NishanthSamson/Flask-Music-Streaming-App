@@ -50,8 +50,8 @@
 {% block content %}{% endblock %}
 <div class="col-md-2" id="col3">
         <img src="{{ url_for('static', filename='uploads/' + curr_song.img) }}" class="me-5 rounded" alt="cover" style="width: 15.5rem; height: 15.5rem; object-fit: cover;">
-        <h3 class="mt-2">{{curr_song.name}}</h3>
-        <h6 class="fw-light">{{curr_song.user.username}}</h6>
+        <h3 class="mt-2 ms-1">{{curr_song.name}}</h3>
+        <h6 class="fw-light ms-1">{{curr_song.user.username}}</h6>
 
 </div>
 </div>

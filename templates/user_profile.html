@@ -23,7 +23,7 @@
     {% for song in songs %}
     <div class="col-sm-2">
       <a href="{{ url_for('view_song', id=song.id) }}" class="text-decoration-none text-reset">
-      <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem;" id="songgroup">
+      <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem; overflow: hidden;" id="songgroup">
         <div class="shadow p-2 mb-1 bg-outline-light rounded">
         <img src="{{ url_for('static', filename='uploads/' + song.img) }}" class="card-img-top rounded" style="width: 9rem; height: 9rem; object-fit: cover;">
         <div class="card-body">
@@ -44,7 +44,7 @@
     {% for album in albums %}
     <div class="col-sm-2">
         <a href="{{ url_for('view_album', id=album.id) }}" class="text-decoration-none text-reset">
-        <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem;" id="playlistgroup">
+        <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem; overflow: hidden;" id="playlistgroup">
         <div class="shadow p-2 mb-1 bg-outline-light rounded">
         <img src="{{ url_for('static', filename='uploads/' + album.img) }}" class="card-img-top rounded" style="width: 9rem; height: 9rem; object-fit: cover;">
         <div class="card-body">
@@ -65,7 +65,7 @@
     {% for playlist in playlists %}
     <div class="col-sm-2">
     <a href="{{ url_for('view_playlist', id=playlist.id) }}" class="text-decoration-none text-reset">
-        <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem;" id="playlistgroup">
+        <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem; overflow: hidden;" id="playlistgroup">
         <div class="shadow p-2 mb-1 bg-outline-dark rounded">
         <img src="{{ url_for('static', filename='uploads/' + playlist.img) }}" class="card-img-top rounded" style="width: 9rem; height: 9rem; object-fit: cover;">
         <div class="card-body">

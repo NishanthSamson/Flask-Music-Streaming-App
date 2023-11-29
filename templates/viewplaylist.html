@@ -10,19 +10,24 @@
               </div>
               <div class="col-md-9">
                 <h1 class = "ms-4">{{playlist.name}}</h1>
-                <h5 class = "ms-4">{{playlist.desc}}</h5>
+                <h5 class = "ms-4 fw-normal">{{playlist.desc}}</h5>
               </div>
             </div>
           </div>
           <div class="row mt-3">
             <div class="col-md-1">
-              <h6 class = "ms-4">Song</h6>
+              <!-- <h6 class = "ms-4 fw-light">Cover</h6> -->
             </div>
-            <div class="col-md-9">
-              <h6 class = "ms-4">Artist</h6>
+            <div class="col-md-3">
+              <h6 class = "ms-4 fw-light">Song</h6>
             </div>
-            <div class="col-md-2">
-              <h6>Duration</h6>
+            <div class="col-md-3">
+              <h6 class = "ms-4 fw-light">Artist</h6>
+            </div>
+            <div class="col-md-4">
+              <h6 class=" fw-light">Duration</h6>
+            </div>
+            <div class="col-md-1">
             </div>
 
           </div>
@@ -32,11 +37,16 @@
             <div class="col-md-1">
               <img src="{{ url_for('static', filename='uploads/' + song.img) }}" style="width: 4rem; height: 4rem; object-fit: cover;">
             </div>
-            <div class="col-md-9">
-              <h3>{{song.name}}</h3>
-              <h6>{{song.user.username}}</h6>
+            <div class="col-md-3">
+              <a class="link-light link-underline-opacity-0" href="{{ url_for('view_song', id=song.id) }}"><h4 class="fw-normal">{{song.name}}</h4></a>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
+              <a class="link-light link-underline-opacity-0" href="{{ url_for('view_user_profile', user_id=song.user.id) }}"><h6 class="fw-light">{{song.user.username}}</h6></a>
+            </div>
+            <div class="col-md-4">
+              <h6>{{song.duration}}</h6>
+            </div>
+            <div class="col-md-1">
               <img id="playPauseBtnMenu" src="{{ url_for('static', filename='play.png') }}" width="50px" onclick="Play({{song.id}})">
             </div>
           </div>
