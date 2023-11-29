@@ -2,6 +2,7 @@ from flask import Flask, redirect, render_template, request, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, login_required, current_user, UserMixin, RoleMixin, logout_user
 from flask_security.utils import hash_password
+from flask_security.forms import LoginForm
 from werkzeug.utils import secure_filename
 from flask_bcrypt import *
 import os
@@ -154,7 +155,7 @@ pygame.mixer.init()
 def show():
     auth = current_user.is_authenticated
     if not auth:
-        user = User(username='login', email=' ', img='default.png')
+        user = User(username='', email=' ', img='default.png')
         log, hide = "hidden", ""
     else:
         user = User.query.get(current_user.id)
@@ -533,7 +534,7 @@ def search_results():
     return render_template('results.html', songs=songs, playlists=playlists, albums=albums, status=status, user=user, log=log, hide=hide, curr_song=curr_song)
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     return render_template('login.html')
 
@@ -597,12 +598,27 @@ def admin_dashboard():
         data=[go.Pie(labels=country_labels, values=country_counts)])
     country_chart.update_layout(title_text='Country-wise Song Count')
 
+    song_ratings = db.session.query(Songs.name, Songs.rating) \
+        .filter(Songs.rating.isnot(None)).all()
+
+    song_names = [rating[0] for rating in song_ratings]
+    song_ratings_values = [rating[1] for rating in song_ratings]
+
+    song_rating_chart = go.Figure(
+        data=[go.Bar(x=song_names, y=song_ratings_values)])
+    song_rating_chart.update_layout(
+        title_text='Song Ratings', xaxis_title='Song Name', yaxis_title='Rating')
+
     return render_template('admin_dashboard.html',
                            total_users=total_users,
                            total_artists=total_artists,
                            total_songs=total_songs,
                            gender_chart=gender_chart.to_html(full_html=False),
-                           country_chart=country_chart.to_html(full_html=False))
+                           country_chart=country_chart.to_html(
+                               full_html=False),
+                           song_rating_chart=song_rating_chart.to_html(
+                               full_html=False)
+                           )
 
 
 @app.route('/submit_rating/<int:song_id>', methods=['POST'])

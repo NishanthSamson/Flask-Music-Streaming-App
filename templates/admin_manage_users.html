@@ -8,7 +8,30 @@
     
 </head>
 <body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary p-2">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('index') }}"><img src = "{{ url_for('static', filename='react.svg') }}" width="30px" /></a>
+      <h4 class = "me-5 mt-2 fw-light">StreamWave Admin</h4>
+        <div class = "d-flex me-5">
+        </div>
+        
+      </div>
+  </nav>
 <div class="container py-4">
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <a class="nav-link link-info" aria-current="page" href="{{url_for('admin_manage_content')}}">Content</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link link-info active" href="{{url_for('admin_manage_users')}}">Users</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link link-info" href="{{url_for('admin_dashboard')}}">Dashboard</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link link-danger link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" href="{{url_for('logout')}}">Logout</a>
+  </li>
+  </ul>
     <h2 class="mb-4">Users</h2>
     <div class="row my-3">
     {% for user in users %}

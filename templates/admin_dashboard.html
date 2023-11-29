@@ -1,19 +1,61 @@
-  <h1>Admin Dashboard</h1>
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary p-2">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{{ url_for('index') }}"><img src = "{{ url_for('static', filename='react.svg') }}" width="30px" /></a>
+          <h4 class = "me-5 mt-2 fw-light">StreamWave Admin</h4>
+            <div class = "d-flex me-5">
+            </div>
+            
+          </div>
+      </nav>
+    <div class="container py-4">
+      <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+          <a class="nav-link link-info" aria-current="page" href="{{url_for('admin_manage_content')}}">Content</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link link-info" href="{{url_for('admin_manage_users')}}">Users</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active link-info" href="{{url_for('admin_dashboard')}}">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link link-danger link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" href="{{url_for('logout')}}">Logout</a>
+        </li>
+      </ul>
+<h1 class="mb-4">Admin Dashboard</h1>
+<div>
+    {{ gender_chart|safe }}
+</div>
 
-  <p>Total Users: {{ total_users }}</p>
-  <p>Total Artists: {{ total_artists }}</p>
-  <p>Total Songs: {{ total_songs }}</p>
-
-  <h2>Preferred Genres by Gender</h2>
-  <ul>
-    {% for gender, genre, count in genre_stats %}
-      <li>{{ gender }} - {{ genre }}: {{ count }} songs</li>
-    {% endfor %}
-  </ul>
-
-  <h2>Popular Songs by Country</h2>
-  <ul>
-    {% for country, song, count in country_stats %}
-      <li>{{ country }} - {{ song }}: {{ count }} listens</li>
-    {% endfor %}
-  </ul>
+<div>
+    {{ country_chart|safe }}
+</div>
+<div>
+    {{ song_rating_chart|safe }}
+</div>
+<div class="row">
+<div class="col-md-6">
+<ul class="list-group list-group-horizontal mt-5">
+    <li class="list-group-item flex-fill">Total Users</li>
+    <li class="list-group-item flex-fill">{{ total_users }}</li>
+</ul>
+<ul class="list-group list-group-horizontal">
+    <li class="list-group-item flex-fill">Total Artists</li>
+    <li class="list-group-item flex-fill">{{ total_artists }}</li>
+</ul>
+<ul class="list-group list-group-horizontal">
+    <li class="list-group-item flex-fill">Total Songs</li>
+    <li class="list-group-item flex-fill">{{ total_songs }}</li>
+</ul>
+</div>
+</div>
+</div>
+</body>
+</html>
