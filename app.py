@@ -37,7 +37,7 @@ class Role(db.Model, RoleMixin):
 class User(db.Model, UserMixin):
     __tablename__ = "user"
     id = db.Column(db.Integer(), primary_key=True)
-    email = db.Column(db.String(255), unique=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
     username = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     img = db.Column(db.String(300), default='user.png')
@@ -62,7 +62,7 @@ class Songs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     song = db.Column(db.String(300))
-    img = db.Column(db.String(300))
+    img = db.Column(db.String(300), default='default.png')
     duration = db.Column(db.String(10))
     genre = db.Column(db.String(50))
     rating = db.Column(db.Float, default=0.0)
@@ -72,8 +72,8 @@ class Songs(db.Model):
     lyrics = db.Column(db.String(3000))
     artist_id = db.Column(db.Integer, db.ForeignKey(
         'user.id'), nullable=False)
-    album_id = db.Column(db.Integer, db.ForeignKey(
-        'albums.id'))
+    # album_id = db.Column(db.Integer, db.ForeignKey(
+    #     'albums.id'))
 
 
 class Albums(db.Model):
@@ -155,7 +155,7 @@ pygame.mixer.init()
 def show():
     auth = current_user.is_authenticated
     if not auth:
-        user = User(username='', email=' ', img='default.png')
+        user = User(username='', email=' ', img='user.png')
         log, hide = "hidden", ""
     else:
         user = User.query.get(current_user.id)
@@ -305,8 +305,11 @@ def view_album(id):
 @login_required
 def edit_album(id):
     album = Albums.query.get(id)
-    if current_user.id == album.creator_id or current_user.id == 1:
-        songs = Songs.query.filter_by(artist_id=current_user.id)
+    if current_user.id == album.creator_id or current_user.has_role('admin'):
+        if current_user.has_role('admin'):
+            songs = Songs.query.filter_by(artist_id=album.creator_id)
+        else:
+            songs = Songs.query.filter_by(artist_id=current_user.id)
         if request.method == 'POST':
             action = request.form.get('action')
             if action == 'add_song':
@@ -556,7 +559,11 @@ def search_results():
     albums = Albums.query.filter(
         Albums.name.ilike(f"%{query_string}%")).all()
 
-    return render_template('results.html', songs=songs, playlists=playlists, albums=albums, status=status, user=user, log=log, hide=hide, curr_song=curr_song)
+    users = User.query.filter(
+        User.username.ilike(f"%{query_string}%")
+    ).all()
+
+    return render_template('results.html', songs=songs, playlists=playlists, albums=albums, status=status, user=user, log=log, hide=hide, curr_song=curr_song, users=users)
 
 
 @app.route('/login', methods=['GET', 'POST'])

@@ -6,17 +6,17 @@
 <form method="POST" class="ms-5 me-5" enctype="multipart/form-data">
     <div class="mb-3">
         <label for="name" class="form-label">Name:</label>
-        <input type="text" class="form-control" id="name" placeholder="Name" name="name">
+        <input type="text" class="form-control" id="name" placeholder="Name" name="name" required>
     </div>
 
     <div class="mb-3">
         <label for="image" class="form-label">Cover Image:</label>
-        <input type="file" class="form-control" id="image" placeholder="Image" name="img">
+        <input type="file" class="form-control" id="image" placeholder="Image" name="img" accept="image/jpeg, image/png, image/gif">
     </div>
 
     <div class="mb-3">
         <label for="description" class="form-label">Description:</label>
-        <textarea rows="4" cols="30" class="form-control" id="description" name="desc"></textarea>
+        <textarea rows="4" cols="30" class="form-control" id="description" name="desc" required></textarea>
     </div>
 
     {% for song in songs %}

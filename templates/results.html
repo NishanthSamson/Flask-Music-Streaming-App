@@ -64,5 +64,25 @@
                 {% endfor %}
             </div>
             </div>
+
+            <div class="container-fluid">
+              <h2 class = "mt-2 mb-2">Artists</h2>
+              <div class="row">
+              {% for usera in users %}
+              <div class="col-sm-2">
+                  <a href="{{ url_for('view_user_profile', user_id=usera.id) }}" class="text-decoration-none text-reset">
+                  <div class="cardgroup me-1 mb-4 rounded" style="width: 10rem; height: 14rem; overflow: hidden;" id="playlistgroup">
+                  <div class="shadow p-2 mb-1 bg-outline-light rounded">
+                    <img src = "{{ url_for('static', filename='uploads/' + usera.img) }}" class="mt-2 rounded-circle" width="120px" height="120px" class = "mt-2" style="object-fit: cover;"/>
+                  <div class="card-body">
+                    <h4 class="mt-1">{{usera.username}}</h4>
+                  </div>
+                </a>
+                </div>
+              </div>
+              </div>
+              {% endfor %}
+          </div>
+          </div>
         </div>
 {% endblock %}
