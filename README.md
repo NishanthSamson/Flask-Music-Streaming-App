@@ -21,6 +21,8 @@ and albums</li>
 <b>UI Wireframe:</b> https://www.figma.com/file/iris0oq5xRFil1s1rDYhaA/MAD-1?type=design&node-id=0%3A1&mode=design&t=p3ZkhCpIMLZAAK9y-1
 
 <h3>Screenshots</h3>
+Home Page:
 <img src="https://raw.githubusercontent.com/NishanthSamson/Flask-Music-Streaming-App/main/screenshots/Screenshot%202024-05-01%20115355.png" width="610" height="330"><br>
-<img src="https://raw.githubusercontent.com/NishanthSamson/Flask-Music-Streaming-App/main/screenshots/Screenshot%202024-05-01%20114459.png" width="610" height="330">
+Playlist Page:
+<img src="https://raw.githubusercontent.com/NishanthSamson/Flask-Music-Streaming-App/main/screenshots/Screenshot%202024-05-01%20121008.png" width="610" height="330">
 
